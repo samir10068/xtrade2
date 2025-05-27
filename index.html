@@ -1,0 +1,249 @@
+Conversation opened. 1 unread message.
+
+Skip to content
+Using Gmail with screen readers
+Enable desktop notifications for Gmail.
+   OK  No thanks
+7 of 535
+code
+Inbox
+
+sa han <moral.sa10068@gmail.com>
+Attachments
+Tue, May 27, 6:05 PM (7 hours ago)
+to me
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
+
+const app = express();
+
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // ✅ Add JSON body support
+
+// Trackbox credentials and endpoint
+const TRACKBOX_USERNAME = 'xtsadi';
+const TRACKBOX_PASSWORD = 'Sa123@';
+const TRACKBOX_API_KEY = '2643889w34df345676ssdas323tgc738';
+const TRACKBOX_PULL_API_KEY = '264388973aaa9b2f9eb2aa84a9c7382e';
+const TRACKBOX_PUSH_URL = 'https://tb.5staraffiliates.com/api/signup/procform';
+const TRACKBOX_PULL_URL = 'https://tb.5staraffiliates.com/api/pull/customers';
+const AFFILIATE_ID = '2958058';
+const GROUP_ID = '24';
+
+// Serve the HTML form
+app.get('/', (req, res) => {
+  const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
+  res.send(html);
+});
+
+// Handle lead submission
+app.post('/submit', async (req, res) => {
+  try {
+    const payload = {
+      ai: AFFILIATE_ID,
+      ci: "2",
+      gi: GROUP_ID,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      email: req.body.email,
+      password: req.body.password,
+      phone: req.body.phone,
+      userip: req.body.userip,
+      so: req.body.so || "xtrade-funnel",
+      sub: "param1",
+      ad: "adsource",
+      term: "term",
+      campaign: "campaign",
+      medium: "cpc",
+      lg: "EN"
+    };
+
+    const headers = {
+      'x-trackbox-username': TRACKBOX_USERNAME,
+      'x-trackbox-password': TRACKBOX_PASSWORD,
+      'x-api-key': TRACKBOX_API_KEY,
+      'Content-Type': 'application/json',
+    };
+
+    const response = await axios.post(TRACKBOX_PUSH_URL, payload, { headers });
+
+    if (response.data && response.data.status === 'ok') {
+      res.send('<h3>✅ Lead sent successfully!</h3><a href="/">Go back</a>');
+    } else {
+      res.send('<h3>❌ Failed to send lead.</h3><pre>' + JSON.stringify(response.data) + '</pre><a href="/">Try again</a>');
+    }
+  } catch (error) {
+    res.send(`<h3>❌ Error: ${error.message}</h3><a href="/">Go back</a>`);
+  }
+});
+
+// Pull Leads + Deposits
+app.post('/pull-statuses', async (req, res) => {
+  const pullHeaders = {
+    'x-trackbox-username': TRACKBOX_USERNAME,
+    'x-trackbox-password': TRACKBOX_PASSWORD,
+    'x-api-key': TRACKBOX_PULL_API_KEY,
+    'Content-Type': 'application/json',
+  };
+
+  const body = {
+    from: req.body.from,
+    to: req.body.to,
+    type: req.body.type || "3", // 3 = Leads + Deposits
+    page: req.body.page || "0"
+  };
+
+  try {
+    const response = await axios.post(TRACKBOX_PULL_URL, body, { headers: pullHeaders });
+    res.json(response.data);
+  } catch (err) {
+    console.error('❌ Pull API error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}`);
+});
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Xtrade Lead Form</title>
+</head>
+<body>
+  <h2>Xtrade Lead Form</h2>
+  <form action="/submit" method="POST">
+    <input name="firstname" placeholder="First Name" required /><br />
+    <input name="lastname" placeholder="Last Name" required /><br />
+    <input name="email" type="email" placeholder="Email" required /><br />
+    <input name="password" type="password" placeholder="Password" required /><br />
+    <input name="phone" placeholder="Phone Number" required /><br />
+    <input name="userip" placeholder="User IP" required /><br />
+    <input name="so" placeholder="Funnel Name (so)" /><br />
+    <button type="submit">Send Lead</button>
+  </form>
+
+  <hr />
+
+  <h2>Pull Leads + Deposits</h2>
+  <form id="pullForm">
+    <label>From: <input type="date" name="from" required></label><br />
+    <label>To: <input type="date" name="to" required></label><br />
+    <button type="submit">Pull Data</button>
+  </form>
+
+  <pre id="pullResult" style="white-space: pre-wrap; background: #f0f0f0; padding: 1em;"></pre>
+
+  <script>
+    document.getElementById('pullForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const fromDate = formData.get('from') + " 00:00:00";
+      const toDate = formData.get('to') + " 23:59:59";
+
+      const res = await fetch('/pull-statuses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: fromDate,
+          to: toDate,
+          type: "3",
+          page: "0"
+        })
+      });
+
+      const data = await res.json();
+      document.getElementById('pullResult').textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+ One attachment
+  •  Scanned by Gmail
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Xtrade Lead Form</title>
+</head>
+<body>
+  <h2>Xtrade Lead Form</h2>
+  <form action="/submit" method="POST">
+    <input name="firstname" placeholder="First Name" required /><br />
+    <input name="lastname" placeholder="Last Name" required /><br />
+    <input name="email" type="email" placeholder="Email" required /><br />
+    <input name="password" type="password" placeholder="Password" required /><br />
+    <input name="phone" placeholder="Phone Number" required /><br />
+    <input name="userip" placeholder="User IP" required /><br />
+    <input name="so" placeholder="Funnel Name (so)" /><br />
+    <button type="submit">Send Lead</button>
+  </form>
+
+  <hr />
+
+  <h2>Pull Leads + Deposits</h2>
+  <form id="pullForm">
+    <label>From: <input type="date" name="from" required></label><br />
+    <label>To: <input type="date" name="to" required></label><br />
+    <button type="submit">Pull Data</button>
+  </form>
+
+  <pre id="pullResult" style="white-space: pre-wrap; background: #f0f0f0; padding: 1em;"></pre>
+
+  <script>
+    document.getElementById('pullForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const fromDate = formData.get('from') + " 00:00:00";
+      const toDate = formData.get('to') + " 23:59:59";
+
+      const res = await fetch('/pull-statuses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: fromDate,
+          to: toDate,
+          type: "3",
+          page: "0"
+        })
+      });
+
+      const data = await res.json();
+      document.getElementById('pullResult').textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
+index.html
+Displaying index.html.
